@@ -56,12 +56,7 @@ public class CategoryController {
     @DeleteMapping
     public R<String> delete(Long id){
         log.info("删除分类，id为：{}",id);
-        //菜品分类不为空
-
-        //套餐分类不为空
-
-        //都是空
-        categoryService.removeById(id);
+        categoryService.remove(id);
         return R.success("分类删除成功");
     }
     @PutMapping

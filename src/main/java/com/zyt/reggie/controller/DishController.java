@@ -15,9 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -111,11 +109,11 @@ public class DishController {
      */
     @PutMapping
     public R<String> update(@RequestBody DishDto dishDto){
-        log.info(dishDto.toString());
+        log.info("修改菜品:{}",dishDto.toString());
 
         dishService.updateWithFlavor(dishDto);
 
-        return R.success("新增菜品成功");
+        return R.success("修改菜品成功");
     }
     /**
      * 修改菜品售卖状态
@@ -156,5 +154,20 @@ public class DishController {
             dishFlavorService.remove(queryWrapper);
         }
         return R.success("删除成功");
+    }
+
+    /**
+     * 根据条件查询对应的菜品数据
+     * @param dish
+     * @return
+     */
+    @GetMapping("/list")
+    public R<List<Dish>> list(Dish dish){
+        LambdaQueryWrapper<Dish> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(dish.getCategoryId()!=null,Dish::getCategoryId,dish.getCategoryId());
+        lambdaQueryWrapper.like(dish.getName()!=null,Dish::getName,dish.getName());
+        lambdaQueryWrapper.orderByAsc(Dish::getSort).orderByDesc(Dish::getUpdateTime);
+        List<Dish> list = dishService.list(lambdaQueryWrapper);
+        return R.success(list);
     }
 }

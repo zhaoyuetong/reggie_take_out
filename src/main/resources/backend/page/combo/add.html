@@ -188,6 +188,7 @@
               <el-input v-model="ruleForm.price" placeholder="请设置套餐价格" />
             </el-form-item>
           </div>
+
           <div>
             <el-form-item label="套餐菜品:" class="setmealFood">
               <el-form-item>
@@ -222,6 +223,11 @@
                   </div>
                 </div>
               </el-form-item>
+            </el-form-item>
+          </div>
+          <div>
+            <el-form-item label="参考价格:">
+              <el-input :value="totalPrice" placeholder="请选择菜品" readonly/>
             </el-form-item>
           </div>
           <div>
@@ -308,6 +314,7 @@
                     class="items"
                   >
                     <el-checkbox
+                      :disabled="item.status == 0"
                       :key="index"
                       :label="item"
                     >
@@ -316,7 +323,8 @@
                         <span>{{ item.status == 0 ? '停售' : '在售' }}</span>
                         <span>{{ Number(item.price)/100 }}</span>
                       </div>
-                    </el-checkbox>
+                    </el-checkbox
+                       :disabled     >
                   </div>
                 </el-checkbox-group>
               </div>
@@ -436,6 +444,14 @@
               },
             }
           },
+          totalPrice() {
+            let totals = 0;
+            for(let dish of this.dishTable || []) {
+              totals = totals + (dish.price * dish.copies);
+            }
+            totals = (totals / 100.0) + "元";
+            return totals;
+          }
         },
         watch:{
           seachKey(value){

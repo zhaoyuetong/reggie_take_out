@@ -19,7 +19,7 @@ public class SetmealController {
     @Autowired
     private SetmealService setmealService;
     @Autowired
-    SetmealDishService setmealDishService;
+    private SetmealDishService setmealDishService;
     /**
      * 分页查询
      * @param page
@@ -94,7 +94,7 @@ public class SetmealController {
             long setmealid = Long.parseLong(id);
             setmeal.setId(setmealid);
             setmealService.removeById(setmeal);
-            //清理当前菜品对应口味数据---dish_flavor表的delete操作
+            //清理当前菜品对应口味数据---SetmealDish表的delete操作
             LambdaQueryWrapper<SetmealDish> queryWrapper = new LambdaQueryWrapper();
             queryWrapper.eq(SetmealDish::getSetmealId,setmealid);
             setmealDishService.remove(queryWrapper);

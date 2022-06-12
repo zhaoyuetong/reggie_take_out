@@ -10,6 +10,7 @@ import com.zyt.reggie.utils.sendsmsutf8;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @RestController
@@ -25,6 +27,8 @@ import java.util.Map;
 public class UserController {
     @Autowired
     private UserService userService;
+    @Autowired
+    private RedisTemplate redisTemplate;
     @PostMapping("/sendMsg")
     public R<String> sendMsg(@RequestBody User user, HttpSession session){
         //获取手机号
@@ -39,7 +43,8 @@ public class UserController {
 */
             //使用互亿无线发送短信
             //sendsmsutf8.sendMessage(phone,code);
-            session.setAttribute(phone,code);
+            //session.setAttribute(phone,code);
+            redisTemplate.opsForValue().set(phone,code,5, TimeUnit.MINUTES);
             return R.success("短信发送成功");
         }
         return R.error("短信发送失败");
@@ -50,7 +55,9 @@ public class UserController {
         String phone = map.get("phone").toString();
         String code = map.get("code").toString();
         //从session中获取验证码
-        Object codeInsession = session.getAttribute(phone);
+        //Object codeInsession = session.getAttribute(phone);
+        //从redis中获取验证码
+        Object codeInsession = redisTemplate.opsForValue().get(phone);
         //验证码比对成功
         if (codeInsession!=null&& codeInsession.equals(code)){
             LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper();
@@ -63,6 +70,8 @@ public class UserController {
                 userService.save(user);
             }
             session.setAttribute("user",user.getId());
+            //登录成功删除验证码
+            redisTemplate.delete(phone);
             return R.success(user);
         }
 
